@@ -8,10 +8,12 @@ library(readxl)
 library(plotrix)
 library(psych)
 library(scatterplot3d)
+library(gridExtra)
+library(plotly)
 
 #//?ACQUISIZIONE DATI
 #//library(readxl)
-DATIREMPORIO <- read_excel("DATIREMPORIO2023.xlsx", 
+DATIREMPORIO <- read_excel("DATIREMPORIO2023.xlsx", #//TODO controllare cartella doppia 262
                               na = "na")
 cartelle <- c(DATIREMPORIO$n_tessera)
 DATIACP <- read_excel("DATIACP23.xlsx", na = "na")
@@ -26,7 +28,7 @@ anames<-c("Minimo","1°Q-perc","Mediana","Media","3°Q-perc","Massimo")
 at<-paste(anames,a1, sep=" = ")
 library(gridExtra)
 jpeg(filename = file, width = 180, height = 200, units = "px", pointsize = 12,
-     quality = 75,bg = "white")
+     quality = 100,bg = "white")
 grid.arrange(top=titolo,tableGrob(at))
 dev.off()
 }
@@ -35,13 +37,13 @@ dev.off()
 #//?Analisi monovariata
 
 #Residenza tab.2
-a2 <- table(DATIREMPORIO$residenza)
-write.csv(file = "Residenza.csv", a2)
+tabresidenza <- table(DATIREMPORIO$residenza)
+write.csv(file = "Residenza.csv", tabresidenza)
 
-barplot(table(DATIREMPORIO$residenza), col=c(1:6), cex.axis=0.8, cex.names=0.8, 
-        main="EMPORIO famiglie Comune di residenza",ylab = "numero", xlab="Comuni afferenti", names.arg=c("Albareto", "Bedonia", 
-        "Berceto", "BorgoTaro", "Compiano", "Solignano","Tornolo", "Valmozzola"))
-
+jpeg("residenza.jpg", width = 800, height = 600, quality = 100)
+barplot(tabresidenza, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
+       main="FAMIGLIE IN ACCESSO PER COMUNE DI RESIDENZA", ylab = "Numero famiglie in accesso", xlab = "Comuni afferenti", legend.text = rownames(tabresidenza))
+dev.off()
 #Anni primo colloquio tab.1
 gsumtable( DATIREMPORIO$anni_emporio,"tab-1.jpg", "Anni dal primo colloquio")
 
@@ -50,88 +52,163 @@ write.csv(file="anni.csv",anni )
 
 boxplot(DATIREMPORIO$anni_emporio, main="EMPORIO Primo colloquio famiglie")
 
-barplot(table(DATIREMPORIO$anni_emporio), col=c(1:9), cex.axis=0.8, cex.names=0.8, 
-        main="EMPORIO Primo colloquio famiglie",ylab = "numero", xlab="Anni dal primo colloquio",names.arg=c("0", "1", 
-                                                 "2", "3","4", "5", 
-                                                 "6", "7","8","9","10"))
+jpeg("primo_colloquio.jpg", width = 800, height = 600, quality = 100)
+barplot(anni, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
+       main="PRIMO ACCESSO DELLA FAMIGLIA", ylab = "Numero famiglie in accesso", xlab = "Anni dal primo acceso", legend.text = rownames(anni))
+dev.off()
 
 #Popolazione per residenza
+library(knitr)
+library(kableExtra)
 
-write.csv(file="popolazione.csv", table(DATIREMPORIO$residenza, DATIREMPORIO$C_famiglia))
-write.csv(file="minori.csv", table(DATIREMPORIO$residenza, DATIREMPORIO$minori))
-write.csv(file="infanti.csv", table(DATIREMPORIO$residenza, DATIREMPORIO$infanti))
-write.csv(file="anziani.csv", table(DATIREMPORIO$residenza, DATIREMPORIO$anziani))
+popol <- table(DATIREMPORIO$residenza, DATIREMPORIO$C_famiglia)
+write.csv(file="popolazione.csv", popol )
+totpopol <- sum(rowSums(popol[, 1:7]))
+tab1 <- kable(popol, caption = paste("FAMIGLIE PER COMPONENTI TOT=", totpopol), align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(1, bold = TRUE, background = "yellow") %>%
+    row_spec(0, bold = TRUE, background = "lightgray")
+save_kable(tab1, file="tabellapopolazione.html")
+
+minori <- table(DATIREMPORIO$residenza, DATIREMPORIO$minori)
+write.csv(file="minori.csv", minori)
+totminori <- sum(rowSums(minori[, 2:5]))
+tab2 <- kable(minori, caption = paste("FAMIGLIE CON MINORI >15aa TOT=", totminori), align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(1, bold = TRUE, background = "yellow") %>%
+    row_spec(0, bold = TRUE, background = "lightgray")
+save_kable(tab2, file="tabellaminori.html")
+
+
+infanti <- table(DATIREMPORIO$residenza, DATIREMPORIO$infanti)
+totinfanti <- sum(rowSums(infanti[, 2:4]))
+write.csv(file="infanti.csv", infanti)
+tab3 <- kable(infanti, caption = paste("FAMIGLIE CON INFANTI <3aa TOT=", totinfanti), align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(1, bold = TRUE, background = "yellow") %>%
+    row_spec(0, bold = TRUE, background = "lightgray")
+save_kable(tab3, file="tabellainfanti.html")
+
+
+anziani <- table(DATIREMPORIO$residenza, DATIREMPORIO$anziani)
+totanziani <- sum(rowSums(anziani[, 2:3]))
+write.csv(file="anziani.csv", anziani)
+tab4 <- kable(anziani, caption = paste("FAMIGLIE CON ANZIANI >65aa TOT=", totanziani), align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(1, bold = TRUE, background = "yellow") %>%
+    row_spec(0, bold = TRUE, background = "lightgray")
+save_kable(tab4, file="tabellaanziani.html")
 
 #Tipologia abitativa
-a3 <- table(DATIREMPORIO$abitazione)
-write.csv(file = "Abitazione.csv", a3)
+abitazione <- table(DATIREMPORIO$abitazione)
+write.csv(file = "Abitazione.csv", abitazione)
+
+jpeg("abitazione.jpg", width = 800, height = 600, quality = 100)
+barplot(abitazione, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
+       main="FAMIGLIA TIPOLOGIA DI ABITAZIONE", ylab = "Numero famiglie in accesso", xlab = "Tipologia di abitazione", legend.text = rownames(abitazione))
+dev.off()
 
 barplot(table(DATIREMPORIO$abitazione), col=c(0:5), cex.axis=0.8, cex.names=0.8, 
         main="EMPORIO famiglie Tipologia abitativa", names.arg=c("Acer-Agevolato", "Affitto", 
                                                                  "Precario-provvisorio", "Assente", "Proprietà"))
 #ISEE Famiglie
 gsumtable( DATIREMPORIO$isee,"tab-2.jpg", "Isee Famiglie")
-
-boxplot(DATIREMPORIO$isee, main="EMPORIO Isee famiglie")
-
+jpeg("iseeplot.jpg", width = 800, height = 600, quality = 100)
+boxplot(DATIREMPORIO$isee, main="ISEE FAMIGLIE")
+dev.off()
+jpeg("isee_densita.jpg", width = 800, height = 600, quality = 100)
+plot(density(DATIREMPORIO$isee),xlab = "DENSITA' ISEE FAMIGLIA", ylab = "Densità dati",main="ISEE")
+dev.off()
 #certificazioni comunali
-#//library(plotrix)
-pie3D(table(DATIREMPORIO$certificazione), col=c(2:3), 
-        main="EMPORIO famiglie certificate dai Servizi", labels=c("non Certificate", "Certificate"))
+library(plotrix)
+jpeg("servizi.jpg", width = 800, height = 600, quality = 100)
+pie3D(table(DATIREMPORIO$certificazione), col=c(2:3), explode = 0.1, 
+        main="FAMIGLIE CON ACCESSO CERTIFICATO", labels=c("non Certificato", "Certificato"))
+dev.off()
 #migrante
-table(DATIREMPORIO$migrante)
-pie3D(table(DATIREMPORIO$migrante), col=c(2:3), 
-    main="Famiglie con un progetto di migrazione", labels=c("Non-Migrante", "Migrante"))
+jpeg("migranti.jpg", width = 800, height = 600, quality = 100)
+pie3D(table(DATIREMPORIO$migrante), col=c(2:3), explode = 0.1, 
+        main="FAMIGLIE CON PROGETTO DI MIGRAZIONE", labels=c("Non migrante", "Migrante"))
+dev.off()
+
 #lavoro
-table(DATIREMPORIO$lavoro)
-pie3D(table(DATIREMPORIO$lavoro), col=c(2:3), 
-    main="Famiglie con assenza di lavoro stabile o regolare", labels=c("Assenza di un lavoro", "Un lavoro"))
+jpeg("lavoro.jpg", width = 800, height = 600, quality = 100)
+pie3D(table(DATIREMPORIO$lavoro), col=c(2:3), explode = 0.1, 
+        main="FAMIGLIE CON UN OCCUPATO", labels=c("Non occupati", "Occupato"))
+dev.off()
 #nazionalita
-a4 <- table(DATIREMPORIO$nazionalita)
-write.csv(file = "Cittadinanza.csv", a4)
-barplot(table(DATIREMPORIO$nazionalita), names.arg=c("AL","B","BL","CL","ESL","GH","I","KS","MC","MR","ML",                                         "NG","PK","RSD","RD","RM","SN","SR", "TN", "UK", "VE"), col=c(3:25), width=2, space = 1.8, cex.axis=1, cex.names=0.6,  
-        main="EMPORIO famiglie nazionalita'", horiz = TRUE,
-        )
-legend("topright", legend = c("Venezuela","Ukraina","Tunisia","Siria","Serbia","Senegal","Romania",
-"RDomingo","RSDomingo","Pakistan","Nigeria","Moldavia","Marocco",
- "Macedonia","Kosovo","Italia","Ghana","ElSalvador","Colombia","Bulgaria","Brasile","ALbania"), ncol = 2,cex = 0.5)
+nazionalita <- table(DATIREMPORIO$nazionalita)
+write.csv(file = "nazionalita.csv", nazionalita)
+
+jpeg("nazionalita.jpg", width = 800, height = 600, quality = 100)
+barplot(nazionalita, col=rainbow(length(nazionalita)), cex.axis=1, cex.names=1, 
+       main="FAMIGLIA PER NAZIONALITA'", ylab = "Numero di famiglie", xlab = "Nazionalità", legend.text = rownames(nazionalita))
+dev.off()
+
+tab4 <- kable(nazionalita, caption = paste("FAMIGLIE per NAZIONALITA'"), align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(1, bold = TRUE, background = "yellow") %>%
+    row_spec(0, bold = TRUE, background = "lightgray")
+save_kable(tab4, file="nazionalita.html")
 
 #Anni
-plot(density(DATIREMPORIO$anni),xlab = "Anni capofamiglia", ylab = "Densità dati",main="EMPORIO Anni capofamiglia")
-
-gsumtable( DATIREMPORIO$anni,"tab-5.jpg", "Anni capofamiglia ")
-
+jpeg("anni.jpg", width = 800, height = 600, quality = 100)
+plot(density(DATIREMPORIO$anni),xlab = "anni", ylab = "Densità dati",main="ANNI DI ANZIANITA' CAPOFAMIGLIA")
+dev.off()
+gsumtable( DATIREMPORIO$anni,"tab-5.jpg", "Anzianità capofamiglia ")
+jpeg("anniplot.jpg", width = 800, height = 600, quality = 100)
 boxplot(DATIREMPORIO$anni, main="Anni capofamiglia")
-
-#compenenti nuclEo famigliare
-a5 <- table(DATIREMPORIO$C_famiglia)
-write.csv(file = "componenti.csv", a5)
-
-barplot(table(DATIREMPORIO$C_famiglia),col=1:6,xlab = "COMPONENTI NUCLEO FAMIGLIARE", ylab = "Presenze",main="EMPORIO COMPONENTI famiglia'")
+dev.off()
+#compenenti nucleo famigliare
+componenti <- table(DATIREMPORIO$C_famiglia)
+write.csv(file = "componenti.csv", componenti)
+jpeg("componenti.jpg", width = 800, height = 600, quality = 100)
+barplot(componenti, col=rainbow(length(nazionalita)), cex.axis=1, cex.names=1, 
+       main="FAMIGLIA PER COMPONENTI", ylab = "Numero di famiglie", xlab = "Numero di componenti", legend.text = rownames(componenti))
+dev.off()
 
 gsumtable( DATIREMPORIO$C_famiglia,"tab-6.jpg", "Componenti nucleo famigliare")
-
+jpeg("componentiplot.jpg", width = 800, height = 600, quality = 100)
 boxplot(DATIREMPORIO$C_famiglia, main="Componenti nucleo")
+dev.off()
 
 #Servizi sanitaro sociali occupazione
+jpeg("servizi.jpg", width = 1000, height = 600, quality = 100)
 par(mfrow=c(1,3))
-pie(table(DATIREMPORIO$sociale), col = rainbow(2), radius = 1, 
-    main="Servizio Sociale",labels=c("NO", "SI"))
-pie(table(DATIREMPORIO$sanitario), col = rainbow(4), radius = 1, 
-    main="Servizio Sanitario",labels=c("NO", "SI"))
-pie(table(DATIREMPORIO$collocamento),col = rainbow(6), radius = 1, 
-    main="Servizio Collocamento",labels=c("NO", "SI"))
+pie3D(table(DATIREMPORIO$sociale), col = rainbow(2), radius = 1, explode = 0.1,
+    main="SERVIZIO SOCIALE COMUNALE",labels=c("NO", "SI"))
+pie3D(table(DATIREMPORIO$sanitario), col = rainbow(4), radius = 1, explode = 0.1,
+    main="SERVIZIO SANITARIO",labels=c("NO", "SI"))
+pie3D(table(DATIREMPORIO$collocamento),col = rainbow(6), radius = 1, explode = 0.1,
+    main="SERVIZIO DI COLLOCAMNETO",labels=c("NO", "SI"))
+dev.off()
 
 #//!Analisi Bivariata
-#Componenti nucleo - infanti
-b1<-table(DATIREMPORIO$C_famiglia, DATIREMPORIO$infanti)
-write.csv(file="componenti-infanti.csv", round(prop.table(b1)*100, digits = 2))
-#Componenti nucleo - minori
-b2<-table(DATIREMPORIO$C_famiglia, DATIREMPORIO$minori)
-write.csv(file="componenti-minori.csv", round(prop.table(b1)*100, digits = 2))
-#Componenti nucleo - anziani
-b3<-table(DATIREMPORIO$C_famiglia, DATIREMPORIO$anziani)
-write.csv(file="componenti-anziani.csv", round(prop.table(b1)*100, digits = 2))
+bv1 <- aggregate(DATIREMPORIO$infanti ~ DATIREMPORIO$residenza, data = DATIREMPORIO, sum)
+bv2 <- aggregate(DATIREMPORIO$minori ~ DATIREMPORIO$residenza, data = DATIREMPORIO, sum)
+bv3 <- aggregate(DATIREMPORIO$anziani ~ DATIREMPORIO$residenza, data = DATIREMPORIO, sum)
+
+BV1 <- merge(bv1, bv2, by="DATIREMPORIO$residenza" )
+BV <- merge(BV1, bv3, by="DATIREMPORIO$residenza" )
+rownames(BV) <- c("Comuni","INFANTI", "MINORI", "ANZIANI")
+tab9 <- kable(BV, caption = "NUMERO DI INFANTI, MINORI e ANZIANI PER COMUNE", align = "c") %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                  full_width = F, 
+                  position = "center") %>%
+    column_spec(0, bold = TRUE, background = "ligthyellow") %>%
+    row_spec(1, bold = TRUE, background = "lightblue")
+save_kable(tab9, file="BVinfanti_minori_anziani.html")
+
 
 #//!ACP sul set DATIACP
 plot(DATIACP)
@@ -139,10 +216,15 @@ PCA <- prcomp(DATIACP, scale = TRUE)
 print(PCA)
 summary(PCA)
 cor.PCA <- cor(DATIACP, PCA$x)
-cor.PCA
-screeplot(PCA,type=c("lines"))
-biplot(PCA)
-plot(PCA) #//TODO inserito
+print(cor.PCA)
+jpeg("pca_autovalori.jpg", width = 800, height = 600)
+screeplot(PCA,type=c("lines"), main = "Autovalori sulle componenti principali")
+dev.off()
+# Visualizzare il biplot della PCA
+library(factoextra)
+jpeg("pca_biplot.jpg", width = 800, height = 800)
+fviz_pca_biplot(PCA, repel = TRUE, title = "RAPPRESENTAZIONE GRAFICA DEL PCA IN 2D",col.var = "red", col.ind = "blue")
+dev.off()
 
 library(tidyverse)
 library(psych)
@@ -151,101 +233,112 @@ describe(DATIACP,
          skew = FALSE, 
          # aggiungo la differenza interquartile
          IQR = TRUE) 
-cor(DATIACP) %>% 
+correlazioneACP <- cor(DATIACP) %>% 
   round(2)
-# colori
-col <- colorRampPalette(c("green", "white", "red"))(20)
+print(correlazioneACP)
 # heatmap
-heatmap(cor(DATIACP),
-        col = col, 
+jpeg("pca_MATRICE-COR.jpg", width = 700, height = 700)
+heatmap(correlazioneACP,
+        main = "GRAFICO DELLA MATRICE DI CORRELAZIONE VAR",
+        col = colorRampPalette(c("blue", "white", "red"))(100),
+        margins = c(20,20), 
         symm = TRUE)
+dev.off()
+
 PCA.rot <- principal(DATIACP, 
                      rotate="varimax", 
                      nfactors=3, 
                      scores=TRUE)
-PCA.rot
-print.psych(PCA.rot, sort = T, cut = 0.3)
-plot(PCA.rot$values, type = "lines")
-as.table(PCA.rot$loadings)^2 
-  proportions(1) %>% round(2)
+print(PCA.rot)
 
-biplot(PCA.rot)
+# matrice dei residui (uniqueness)
+tab11 <- factor.residuals(r = cor(DATIACP), 
+                 f = PCA.rot$loading)
+tab12 <- resid(PCA.rot)
+print(tab11)
+print(tab12)
 
-biplot(PCA.rot, choose = c(1,2),
-       main = "Varimax")
-abline(h = 0, lty = 2)
-abline(v = 0, lty = 2)
-
+#//! SIMULAZIONI PCA 3D
 #sperimentazione 3d grafico sui dati ACP
 library(scatterplot3d)
-colors <- c( "red")
-scatterplot3d(DATIACP[,1:3], pch=16, color=colors)
-
-# Eseguire l'Analisi delle Componenti Principali (ACP)
-
-library(plotly)
-res.pca <- prcomp(DATIACP[, -5], scale = TRUE)
+colors <- c( "blue")
+scatterplot3d(DATIACP[,3:5], pch=16, color=colors)
 
 # Ottenere i risultati delle componenti principali
 pca_df <- data.frame(res.pca$x)
 
-# Creare un grafico 3D interattivo con plotly sulle tre componenti ACP
- plot_ly(pca_df, x = ~PC1, y = ~PC2, z = ~PC3, color = ~DATIACP$minori) %>%
+# Creare un grafico 3D interattivo con plotly sulle tre componenti ACP da esplorare
+ library(plotly)
+ plot_ly(PCA, x = ~PC1, y = ~PC2, z = ~PC3, color = ~DATIACP$minori) %>%
     add_markers() %>%
     layout(scene = list(xaxis = list(title = 'PC1 Anziani disabili'),
                        yaxis = list(title = 'PC2 cronicità'),
                          zaxis = list(title = 'PC3 migranti famiglie')))
 
-# matrice dei residui (uniqueness)
-factor.residuals(r = cor(DATIACP), 
-                 f = PCA.rot$loading)
-resid(PCA.rot)
-resid(PCA.rot) %>% 
 
 #//!CLUSTER Analisys
+
 utilities_std <- scale(DATIACP)
 DATICA <- dist(utilities_std, method = "euclidean" )
 CA <- hclust(DATICA, method = "complete")
-plot(CA, main="Analisi dei cluster", xlab = "ALBERO DEI CLUSTER",  ylab = "Profondita'")
+num_cluster= 6
+gruppi <- cutree(CA, k=num_cluster)
+jpeg("cluster.jpg", width = 800, height = 600)
+fviz_dend(CA, 
+          k = num_cluster, # Numero di cluster
+          rect = TRUE, # Aggiungere rettangoli attorno ai cluster
+          rect_fill = TRUE, # Riempire i rettangoli con colore
+          rect_border = "jco", # Colore dei bordi dei rettangoli
+          cex = 0.6, # Dimensione del testo
+          lwd = 0.4, # Spessore delle linee del dendrogramma
+          main = "Dendrogramma del Clustering Gerarchico")
+dev.off()
 
  
 #//?analsi CA
-num_clus= 5
-gruppi <- cutree(CA, k=num_clus) # taglia l'albero in <num_clus> cluster
-rect.hclust(CA, k=num_clus, border="red")
+
 tabellagruppi <- data.frame(TESSSERE = cartelle, GRUPPO = gruppi)
 write.csv(file="clustertab.csv",table(gruppi))
 write.csv(file="clustertessere.csv",tabellagruppi, row.names = FALSE)
-baricentri<-by(utilities_std,gruppi,colMeans)
-#//TODO non funziona - write.table(file="baricentritab.csv", baricentri) 
-M=colMeans(utilities_std[gruppi==1,])
-for (i in 2:num_clus)+{ M=rbind(M,colMeans(utilities_std[gruppi==i,])) }
-rownames(M)=rownames(table(gruppi))
-round(M,2)
-#//library(tidyverse)
-#//library(factoextra)
+#baricentri<-by(utilities_std,gruppi,colMeans)
+#baricentri_df <- do.call(rbind, baricentri)
+#write.csv(file="baricentritab.csv", baricentri_df, row.names = TRUE)
+
 # Rappresentazione cluster con due dimensioni
-fviz_cluster(list(data = DATICA, dim=(2,3), cluster = gruppi))
+library(tidyverse)
+library(factoextra)
+
+jpeg("clusterGRAFICO.jpg", width = 800, height = 800)
+fviz_cluster(list(data = pca_df, cluster = gruppi),
+             geom = "text",
+             palette = "jco", 
+             ggtheme = theme_classic(),
+             main = "Visualizzazione dei Cluster con PCA")
+dev.off()
 
 #//! ANALISI CASSA
 #//?Analisi descrittiva delle distribuzioni
 #Media distribuzioni per tessera
-#//library(readxl)
+library(readxl)
 mediadist <- ceiling(mean(DISTRIBUZIONI$distribuzioni)) 
+jpeg("distribuzioni.jpg", width = 800, height = 600)
 plot(density(DISTRIBUZIONI$distribuzioni), paste(main = "DISTRIBUZIONI PER TESSERA = ", mediadist), 
      ylab = "densita'", xlab="distribuzioni")
 abline(v=mean(DISTRIBUZIONI$distribuzioni), col="red")
+dev.off()
 # Tessere e punti
-hist(DISTRIBUZIONI$punti, col = 1:12, main = "distribuzione tessere",ylab = "numero'", xlab="PUNTI tessera ")
-
+jpeg("tessere_punti.jpg", width = 800, height = 600)
+hist(DISTRIBUZIONI$punti, col = rainbow(length(DISTRIBUZIONI$punti)), main = "TESSERE E PUNTI",ylab = "Numero di tessere", xlab="PUNTI TESSERE ")
+dev.off()
 #Utilizzo delle tessere
-mediapun <- mean(DISTRIBUZIONI$utilizzo)
-plot(DISTRIBUZIONI$utilizzo, col = 1:12, main = "Utilizzo tessere media punti linea verde",
+mediapun <- ceiling(mean(DISTRIBUZIONI$utilizzo))
+jpeg("distribuzioni_utilizzo.jpg", width = 800, height = 600)
+plot(DISTRIBUZIONI$utilizzo, col = rainbow(length(DISTRIBUZIONI$utilizzo)), pch = 10, main = paste("Utilizzo tessere media punti = " ,mediapun),
       ylab = "Uso in % 1.0=100%", xlab="Le tessere in distribuzione")
 abline(h=mean(DISTRIBUZIONI$utilizzo), col="green")
 abline(h=0, col="blue")
 abline(h=100, col="red")
-
+dev.off()
 
 
 
