@@ -129,7 +129,7 @@ plot(density(DATIREMPORIO$isee),xlab = "DENSITA' ISEE FAMIGLIA", ylab = "Densit√
 dev.off()
 #certificazioni comunali
 library(plotrix)
-jpeg("servizi.jpg", width = 800, height = 600, quality = 100)
+jpeg("certificazioni.jpg", width = 800, height = 600, quality = 100)
 pie3D(table(DATIREMPORIO$certificazione), col=c(2:3), explode = 0.1, 
       main="FAMIGLIE CON ACCESSO CERTIFICATO", labels=c("non Certificato", "Certificato"))
 dev.off()
