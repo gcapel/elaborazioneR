@@ -1,5 +1,5 @@
 #//!ELABORAZIONI DATI EMPORIO 15-8-2024
-#//! Giuseppe Capella 
+#//!  Giuseppe Capella 
 
 #//?LIBRERIE NECESSARIE
 library(tidyverse)
@@ -13,24 +13,24 @@ library(plotly)
 
 #//?ACQUISIZIONE DATI
 #//library(readxl)
-DATIREMPORIO <- read_excel("DATIREMPORIO2023.xlsx", #//TODO controllare cartella doppia 262
-                              na = "na")
+DATIREMPORIO <- read_excel("DATIEMPORIO23.xlsx", #//TODO controllare cartella doppia 262
+                           na = "na")
 cartelle <- c(DATIREMPORIO$n_tessera)
 DATIACP <- read_excel("DATIACP23.xlsx", na = "na")
 
-DISTRIBUZIONI <- read_excel("DEVOLUZIONI.xlsx", #//TODO eliminare i dati percentuali
-                               na = "na")
+DISTRIBUZIONI <- read_excel("DEVOLUZIONI23.xlsx", #//TODO eliminare i dati percentuali
+                            na = "na")
 
 #//?FUNZIONI
 gsumtable<-function (colonna, file, titolo){
-a1<-c(summary(colonna))
-anames<-c("Minimo","1°Q-perc","Mediana","Media","3°Q-perc","Massimo")
-at<-paste(anames,a1, sep=" = ")
-library(gridExtra)
-jpeg(filename = file, width = 180, height = 200, units = "px", pointsize = 12,
-     quality = 100,bg = "white")
-grid.arrange(top=titolo,tableGrob(at))
-dev.off()
+  a1<-c(summary(colonna))
+  anames<-c("Minimo","1°Q-perc","Mediana","Media","3°Q-perc","Massimo")
+  at<-paste(anames,a1, sep=" = ")
+  library(gridExtra)
+  jpeg(filename = file, width = 180, height = 200, units = "px", pointsize = 12,
+       quality = 100,bg = "white")
+  grid.arrange(top=titolo,tableGrob(at))
+  dev.off()
 }
 
 #//!ANALISI DESCRITTIVA
@@ -42,7 +42,7 @@ write.csv(file = "Residenza.csv", tabresidenza)
 
 jpeg("residenza.jpg", width = 800, height = 600, quality = 100)
 barplot(tabresidenza, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
-       main="FAMIGLIE IN ACCESSO PER COMUNE DI RESIDENZA", ylab = "Numero famiglie in accesso", xlab = "Comuni afferenti", legend.text = rownames(tabresidenza))
+        main="FAMIGLIE IN ACCESSO PER COMUNE DI RESIDENZA", ylab = "Numero famiglie in accesso", xlab = "Comuni afferenti", legend.text = rownames(tabresidenza))
 dev.off()
 #Anni primo colloquio tab.1
 gsumtable( DATIREMPORIO$anni_emporio,"tab-1.jpg", "Anni dal primo colloquio")
@@ -54,7 +54,7 @@ boxplot(DATIREMPORIO$anni_emporio, main="EMPORIO Primo colloquio famiglie")
 
 jpeg("primo_colloquio.jpg", width = 800, height = 600, quality = 100)
 barplot(anni, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
-       main="PRIMO ACCESSO DELLA FAMIGLIA", ylab = "Numero famiglie in accesso", xlab = "Anni dal primo acceso", legend.text = rownames(anni))
+        main="PRIMO ACCESSO DELLA FAMIGLIA", ylab = "Numero famiglie in accesso", xlab = "Anni dal primo acceso", legend.text = rownames(anni))
 dev.off()
 
 #Popolazione per residenza
@@ -65,22 +65,22 @@ popol <- table(DATIREMPORIO$residenza, DATIREMPORIO$C_famiglia)
 write.csv(file="popolazione.csv", popol )
 totpopol <- sum(rowSums(popol[, 1:7]))
 tab1 <- kable(popol, caption = paste("FAMIGLIE PER COMPONENTI TOT=", totpopol), align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(1, bold = TRUE, background = "yellow") %>%
-    row_spec(0, bold = TRUE, background = "lightgray")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightgray")
 save_kable(tab1, file="tabellapopolazione.html")
 
 minori <- table(DATIREMPORIO$residenza, DATIREMPORIO$minori)
 write.csv(file="minori.csv", minori)
 totminori <- sum(rowSums(minori[, 2:5]))
 tab2 <- kable(minori, caption = paste("FAMIGLIE CON MINORI >15aa TOT=", totminori), align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(1, bold = TRUE, background = "yellow") %>%
-    row_spec(0, bold = TRUE, background = "lightgray")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightgray")
 save_kable(tab2, file="tabellaminori.html")
 
 
@@ -88,11 +88,11 @@ infanti <- table(DATIREMPORIO$residenza, DATIREMPORIO$infanti)
 totinfanti <- sum(rowSums(infanti[, 2:4]))
 write.csv(file="infanti.csv", infanti)
 tab3 <- kable(infanti, caption = paste("FAMIGLIE CON INFANTI <3aa TOT=", totinfanti), align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(1, bold = TRUE, background = "yellow") %>%
-    row_spec(0, bold = TRUE, background = "lightgray")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightgray")
 save_kable(tab3, file="tabellainfanti.html")
 
 
@@ -100,11 +100,11 @@ anziani <- table(DATIREMPORIO$residenza, DATIREMPORIO$anziani)
 totanziani <- sum(rowSums(anziani[, 2:3]))
 write.csv(file="anziani.csv", anziani)
 tab4 <- kable(anziani, caption = paste("FAMIGLIE CON ANZIANI >65aa TOT=", totanziani), align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(1, bold = TRUE, background = "yellow") %>%
-    row_spec(0, bold = TRUE, background = "lightgray")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightgray")
 save_kable(tab4, file="tabellaanziani.html")
 
 #Tipologia abitativa
@@ -113,7 +113,7 @@ write.csv(file = "Abitazione.csv", abitazione)
 
 jpeg("abitazione.jpg", width = 800, height = 600, quality = 100)
 barplot(abitazione, col=rainbow(length(tabresidenza)), cex.axis=1, cex.names=1, 
-       main="FAMIGLIA TIPOLOGIA DI ABITAZIONE", ylab = "Numero famiglie in accesso", xlab = "Tipologia di abitazione", legend.text = rownames(abitazione))
+        main="FAMIGLIA TIPOLOGIA DI ABITAZIONE", ylab = "Numero famiglie in accesso", xlab = "Tipologia di abitazione", legend.text = rownames(abitazione))
 dev.off()
 
 barplot(table(DATIREMPORIO$abitazione), col=c(0:5), cex.axis=0.8, cex.names=0.8, 
@@ -131,18 +131,18 @@ dev.off()
 library(plotrix)
 jpeg("servizi.jpg", width = 800, height = 600, quality = 100)
 pie3D(table(DATIREMPORIO$certificazione), col=c(2:3), explode = 0.1, 
-        main="FAMIGLIE CON ACCESSO CERTIFICATO", labels=c("non Certificato", "Certificato"))
+      main="FAMIGLIE CON ACCESSO CERTIFICATO", labels=c("non Certificato", "Certificato"))
 dev.off()
 #migrante
 jpeg("migranti.jpg", width = 800, height = 600, quality = 100)
 pie3D(table(DATIREMPORIO$migrante), col=c(2:3), explode = 0.1, 
-        main="FAMIGLIE CON PROGETTO DI MIGRAZIONE", labels=c("Non migrante", "Migrante"))
+      main="FAMIGLIE CON PROGETTO DI MIGRAZIONE", labels=c("Non migrante", "Migrante"))
 dev.off()
 
 #lavoro
 jpeg("lavoro.jpg", width = 800, height = 600, quality = 100)
 pie3D(table(DATIREMPORIO$lavoro), col=c(2:3), explode = 0.1, 
-        main="FAMIGLIE CON UN OCCUPATO", labels=c("Non occupati", "Occupato"))
+      main="FAMIGLIE CON UN OCCUPATO", labels=c("Non occupati", "Occupato"))
 dev.off()
 #nazionalita
 nazionalita <- table(DATIREMPORIO$nazionalita)
@@ -150,15 +150,15 @@ write.csv(file = "nazionalita.csv", nazionalita)
 
 jpeg("nazionalita.jpg", width = 800, height = 600, quality = 100)
 barplot(nazionalita, col=rainbow(length(nazionalita)), cex.axis=1, cex.names=1, 
-       main="FAMIGLIA PER NAZIONALITA'", ylab = "Numero di famiglie", xlab = "Nazionalità", legend.text = rownames(nazionalita))
+        main="FAMIGLIA PER NAZIONALITA'", ylab = "Numero di famiglie", xlab = "Nazionalità", legend.text = rownames(nazionalita))
 dev.off()
 
 tab4 <- kable(nazionalita, caption = paste("FAMIGLIE per NAZIONALITA'"), align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(1, bold = TRUE, background = "yellow") %>%
-    row_spec(0, bold = TRUE, background = "lightgray")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightgray")
 save_kable(tab4, file="nazionalita.html")
 
 #Anni
@@ -174,7 +174,7 @@ componenti <- table(DATIREMPORIO$C_famiglia)
 write.csv(file = "componenti.csv", componenti)
 jpeg("componenti.jpg", width = 800, height = 600, quality = 100)
 barplot(componenti, col=rainbow(length(nazionalita)), cex.axis=1, cex.names=1, 
-       main="FAMIGLIA PER COMPONENTI", ylab = "Numero di famiglie", xlab = "Numero di componenti", legend.text = rownames(componenti))
+        main="FAMIGLIA PER COMPONENTI", ylab = "Numero di famiglie", xlab = "Numero di componenti", legend.text = rownames(componenti))
 dev.off()
 
 gsumtable( DATIREMPORIO$C_famiglia,"tab-6.jpg", "Componenti nucleo famigliare")
@@ -186,11 +186,11 @@ dev.off()
 jpeg("servizi.jpg", width = 1000, height = 600, quality = 100)
 par(mfrow=c(1,3))
 pie3D(table(DATIREMPORIO$sociale), col = rainbow(2), radius = 1, explode = 0.1,
-    main="SERVIZIO SOCIALE COMUNALE",labels=c("NO", "SI"))
+      main="SERVIZIO SOCIALE COMUNALE",labels=c("NO", "SI"))
 pie3D(table(DATIREMPORIO$sanitario), col = rainbow(4), radius = 1, explode = 0.1,
-    main="SERVIZIO SANITARIO",labels=c("NO", "SI"))
+      main="SERVIZIO SANITARIO",labels=c("NO", "SI"))
 pie3D(table(DATIREMPORIO$collocamento),col = rainbow(6), radius = 1, explode = 0.1,
-    main="SERVIZIO DI COLLOCAMNETO",labels=c("NO", "SI"))
+      main="SERVIZIO DI COLLOCAMNETO",labels=c("NO", "SI"))
 dev.off()
 
 #//!Analisi Bivariata
@@ -200,14 +200,26 @@ bv3 <- aggregate(DATIREMPORIO$anziani ~ DATIREMPORIO$residenza, data = DATIREMPO
 
 BV1 <- merge(bv1, bv2, by="DATIREMPORIO$residenza" )
 BV <- merge(BV1, bv3, by="DATIREMPORIO$residenza" )
-rownames(BV) <- c("Comuni","INFANTI", "MINORI", "ANZIANI")
+colnames(BV) <- c("Comuni","INFANTI", "MINORI", "ANZIANI")
 tab9 <- kable(BV, caption = "NUMERO DI INFANTI, MINORI e ANZIANI PER COMUNE", align = "c") %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
-                  full_width = F, 
-                  position = "center") %>%
-    column_spec(0, bold = TRUE, background = "ligthyellow") %>%
-    row_spec(1, bold = TRUE, background = "lightblue")
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive"), 
+                full_width = F, 
+                position = "center") %>%
+  column_spec(1, bold = TRUE, background = "yellow") %>%
+  row_spec(0, bold = TRUE, background = "lightblue")
 save_kable(tab9, file="BVinfanti_minori_anziani.html")
+
+#sperimentazione 3d sulle correlazioni tra variabili ACP
+library(scatterplot3d)
+jpeg("VARIABILIgrafico3d.jpg", width = 800, height = 800)
+scatterplot3d(DATIACP[,3:5], 
+              pch = 10,        
+              color = "blue", # Colore dei punti
+              xlab = "MIGRANTI",  # Etichetta dell'asse x
+              ylab = "ANNI C.F.",  # Etichetta dell'asse y
+              zlab = "MINORI",  # Etichetta dell'asse z
+              main = "Grafico a Dispersione 3D") # Titolo del grafico
+dev.off()
 
 
 #//!ACP sul set DATIACP
@@ -253,27 +265,22 @@ print(PCA.rot)
 
 # matrice dei residui (uniqueness)
 tab11 <- factor.residuals(r = cor(DATIACP), 
-                 f = PCA.rot$loading)
+                          f = PCA.rot$loading)
 tab12 <- resid(PCA.rot)
 print(tab11)
 print(tab12)
 
 #//! SIMULAZIONI PCA 3D
-#sperimentazione 3d grafico sui dati ACP
-library(scatterplot3d)
-colors <- c( "blue")
-scatterplot3d(DATIACP[,3:5], pch=16, color=colors)
-
 # Ottenere i risultati delle componenti principali
-pca_df <- data.frame(res.pca$x)
+pca_df <- data.frame(PCA$x[, 1:3])
 
 # Creare un grafico 3D interattivo con plotly sulle tre componenti ACP da esplorare
- library(plotly)
- plot_ly(PCA, x = ~PC1, y = ~PC2, z = ~PC3, color = ~DATIACP$minori) %>%
-    add_markers() %>%
-    layout(scene = list(xaxis = list(title = 'PC1 Anziani disabili'),
-                       yaxis = list(title = 'PC2 cronicità'),
-                         zaxis = list(title = 'PC3 migranti famiglie')))
+library(plotly)
+plot_ly(pca_df, x = ~PC1, y = ~PC2, z = ~PC3, color = ~DATIACP$minori) %>%
+  add_markers() %>%
+  layout(scene = list(xaxis = list(title = 'PC1 Anziani disabili'),
+                      yaxis = list(title = 'PC2 cronicità'),
+                      zaxis = list(title = 'PC3 migranti famiglie')))
 
 
 #//!CLUSTER Analisys
@@ -294,7 +301,7 @@ fviz_dend(CA,
           main = "Dendrogramma del Clustering Gerarchico")
 dev.off()
 
- 
+
 #//?analsi CA
 
 tabellagruppi <- data.frame(TESSSERE = cartelle, GRUPPO = gruppi)
@@ -334,11 +341,8 @@ dev.off()
 mediapun <- ceiling(mean(DISTRIBUZIONI$utilizzo))
 jpeg("distribuzioni_utilizzo.jpg", width = 800, height = 600)
 plot(DISTRIBUZIONI$utilizzo, col = rainbow(length(DISTRIBUZIONI$utilizzo)), pch = 10, main = paste("Utilizzo tessere media punti = " ,mediapun),
-      ylab = "Uso in % 1.0=100%", xlab="Le tessere in distribuzione")
+     ylab = "Uso in % 1.0=100%", xlab="Le tessere in distribuzione")
 abline(h=mean(DISTRIBUZIONI$utilizzo), col="green")
 abline(h=0, col="blue")
 abline(h=100, col="red")
 dev.off()
-
-
-
