@@ -13,13 +13,16 @@ library(plotly)
 
 #//?ACQUISIZIONE DATI
 #//library(readxl)
-DATIREMPORIO <- read_excel("DATIEMPORIO23.xlsx", #//TODO controllare cartella doppia 262
+DATIREMPORIO <- read_excel("DATIEMPORIO23.xlsx", 
                            na = "na")
 cartelle <- c(DATIREMPORIO$n_tessera)
 DATIACP <- read_excel("DATIACP23.xlsx", na = "na")
 
 DISTRIBUZIONI <- read_excel("DEVOLUZIONI23.xlsx", #//TODO eliminare i dati percentuali
                             na = "na")
+
+BIVARIATA <- read_excel("BIVARIATA.xlsx",
+                            na ="na")
 
 #//?FUNZIONI
 gsumtable<-function (colonna, file, titolo){
@@ -209,16 +212,29 @@ tab9 <- kable(BV, caption = "NUMERO DI INFANTI, MINORI e ANZIANI PER COMUNE", al
   row_spec(0, bold = TRUE, background = "lightblue")
 save_kable(tab9, file="BVinfanti_minori_anziani.html")
 
-#sperimentazione 3d sulle correlazioni tra variabili ACP
+#//!ANALISI TRIVARIATA O DI PIU' VARIABILI
 library(scatterplot3d)
+# data set colori
+group <- as.factor(BIVARIATA$migrante)  # Converti la variabile in fattore
+colorsacp <- c("red", "blue","green")  # Definisci una serie di colori
+
+# Assegna un colore per ogni gruppo
+point_colors <- colorsacp[group]
+
+#Grafico di confronto variabili set BIVARIATA
 jpeg("VARIABILIgrafico3d.jpg", width = 800, height = 800)
-scatterplot3d(DATIACP[,3:5], 
+scatterplot3d(BIVARIATA[,1:3], 
               pch = 10,        
-              color = "blue", # Colore dei punti
-              xlab = "MIGRANTI",  # Etichetta dell'asse x
+              color = point_colors, # Colore dei punti
+              xlab = "PRIMO COLOQUIO",  # Etichetta dell'asse x
               ylab = "ANNI C.F.",  # Etichetta dell'asse y
               zlab = "MINORI",  # Etichetta dell'asse z
-              main = "Grafico a Dispersione 3D") # Titolo del grafico
+              main = "GRAFICO TRIVARIATO 3D  Rosso=nonMIGRANTE blu=MIGRANTE") # Titolo del grafico
+
+# Aggiungi una legenda
+legend("topright", legend = levels(factor(BIVARIATA$migrante)),
+       col = colorsacp, pch = 10, title = "Migranti")
+
 dev.off()
 
 
